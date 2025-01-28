@@ -1,0 +1,8 @@
+dropRate: 1.0
+messages:
+  usage: "Usage: /dropchance <get|set <value>>"
+  get: "Current drop rate: %.2f%%"
+  set: "Drop rate updated to %.2f%%"
+  invalid: "Invalid value. Please provide a number between 0 and 100."
+  range_error: "Please enter a number between 0 and 100."
+  no_permission: "You do not have permission to use this command."
