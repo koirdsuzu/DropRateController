@@ -1,4 +1,4 @@
-package com.koirdsuzu.dropRateController;
+package com.koirdsuzu.dropratecontroller;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
