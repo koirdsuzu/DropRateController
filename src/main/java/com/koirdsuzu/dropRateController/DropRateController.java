@@ -2,6 +2,7 @@ package com.koirdsuzu.dropRateController;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -13,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -82,6 +84,17 @@ public class DropRateController extends JavaPlugin implements Listener, TabCompl
                 event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), drop);
             }
         }
+    }
+
+    @EventHandler
+    public void onExplode(EntityExplodeEvent event){
+        List<Block> blocks = new ArrayList<>();
+        for (final Block block : event.blockList()){
+            if (random.nextDouble() >= dropRate / 100.0){
+                blocks.add(block);
+            }
+        }
+        event.blockList().removeAll(blocks);
     }
 
     @Override
