@@ -1,21 +1,24 @@
-package com.koirdsuzu.dropratecontroller;
+package com.koirdsuzu.dropRateController;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -40,7 +43,10 @@ public class DropRateController extends JavaPlugin implements Listener, TabCompl
         Bukkit.getPluginManager().registerEvents(this, this);
 
         // Set tab completer
-        getCommand("dropchance").setTabCompleter(this);
+        PluginCommand command = getCommand("dropchace");
+        if (command != null){
+            command.setTabCompleter(this);
+        }
 
         getLogger().info("DropRateController enabled.");
     }
@@ -53,17 +59,11 @@ public class DropRateController extends JavaPlugin implements Listener, TabCompl
     // Handle mob drops
     @EventHandler
     public void onEntityDeath(EntityDeathEvent event) {
-        Entity entity = event.getEntity();
-        if (entity instanceof LivingEntity) {
-            LivingEntity livingEntity = (LivingEntity) entity;
-            if (livingEntity.getKiller() != null) {
-                if (random.nextDouble() < dropRate / 100.0) {
-                    // Leave default drops as is if the drop condition is met
-                    return;
-                } else {
-                    // Clear drops if the condition is not met
-                    event.getDrops().clear();
-                }
+        LivingEntity livingEntity = event.getEntity();
+        if (livingEntity.getKiller() != null) {
+            if (random.nextDouble() >= dropRate / 100.0) {
+                // Clear drops if the condition is not met
+                event.getDrops().clear();
             }
         }
     }
@@ -72,7 +72,7 @@ public class DropRateController extends JavaPlugin implements Listener, TabCompl
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
-        if (!player.hasPermission("dropratecontroller.use")) {
+        if (player.hasPermission("dropratecontroller.bypass")) {
             return;
         }
 
@@ -86,8 +86,19 @@ public class DropRateController extends JavaPlugin implements Listener, TabCompl
         }
     }
 
+    @EventHandler
+    public void onExplode(EntityExplodeEvent event){
+        List<Block> blocks = new ArrayList<>();
+        for (final Block block : event.blockList()){
+            if (random.nextDouble() >= dropRate / 100.0){
+                blocks.add(block);
+            }
+        }
+        event.blockList().removeAll(blocks);
+    }
+
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, @Nonnull String[] args) {
         if (command.getName().equalsIgnoreCase("dropchance")) {
             // Check permission
             if (!sender.hasPermission("dropratecontroller.use")) {
@@ -130,7 +141,7 @@ public class DropRateController extends JavaPlugin implements Listener, TabCompl
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    public List<String> onTabComplete(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String alias, @Nonnull String[] args) {
         List<String> completions = new ArrayList<>();
         if (command.getName().equalsIgnoreCase("dropchance")) {
             if (args.length == 1) {
